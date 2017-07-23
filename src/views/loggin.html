@@ -1,0 +1,88 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-box/app-box.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../reduxMixin.html">
+
+
+<dom-module id="loggin-page">
+
+
+    <template>
+
+        <style>
+            .header {
+
+                font-size: 30px;
+            }
+
+            .logginPage {
+                display: flex;
+                flex-direction: column;
+                height: 600px;
+                width: 100%;
+                background: linear-gradient(45deg, rgba(0, 128, 0, 1) 0%, rgba(0, 255, 255, 1) 100%);
+            }
+
+            .logginPage>* {
+                align-self: center;
+            }
+
+            .button {
+                height: 40px;
+                width: 120px;
+                margin: 0px;
+                color: white;
+                font-size: 20px;
+                border: 0px;
+                background-color: purple;
+                border-radius: 20px;
+            }
+        </style>
+        <div class="logginPage">
+
+            <h1 class="header">P2P FileTransfer</h1>
+            <label for=""> Pick username</label> <br />
+            <input id="username" placeholder="user name" on-keyup="changed" autofocus type="text"> <br />
+            <button on-click="_submitUser" class="button"> Login</button>
+        </div>
+
+
+    </template>
+
+
+
+    <script>
+        class LogginPage extends ReduxMixin(Polymer.Element) {
+
+
+            static get is() { return 'loggin-page'; }
+
+            constructor() {
+                super();
+            }
+            changed(e) {
+                if (e.code == "Enter") {
+                    this._submitUser();
+                }
+            }
+            static get properties() {
+                return {
+                };
+            }
+
+            _submitUser() {
+                this.dispatch({ type: 'change_Name', payload: this.$.username.value })
+                this.dispatch({ type: 'change_PeerID', payload: peer.id })
+                this.dispatch({ type: 'change_Page', payload: 1 })
+            }
+            ready() {
+                super.ready();
+
+
+            }
+
+        }
+
+        window.customElements.define(LogginPage.is, LogginPage);
+    </script>
+</dom-module>

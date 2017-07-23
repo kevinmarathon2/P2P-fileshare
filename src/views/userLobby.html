@@ -1,0 +1,172 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-box/app-box.html">
+<script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+<link rel="import" href="../reduxMixin.html">
+
+
+<dom-module id="user-lobby">
+
+
+    <template>
+
+        <style>
+            .listView {
+                width: 350px;
+                height: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+            }
+
+            .listView>* {
+                align-self: center;
+                width: 100%;
+                margin: 5px 0px 0px 10px;
+                border: 1px gray solid;
+                border-radius: 2px;
+                background-color: lightcyan;
+            }
+        </style>
+        <div class="logginPage">
+            user lobby
+        </div>
+        <div class="listView">
+            <dom-repeat items="[[userList]]">
+                <template>
+                    <div on-click="connectToPeer" class="Listitem"> <span> [[item.username]]</span></div>
+
+                </template>
+            </dom-repeat>
+        </div>
+
+    </template>
+
+
+
+    <script>
+        var config = {
+            apiKey: "AIzaSyDOS_q7GpzgYlFbRNvsAOikJH1ZwklYa90",
+            authDomain: "p2pfiletransfer.firebaseapp.com",
+            databaseURL: "https://p2pfiletransfer.firebaseio.com",
+            projectId: "p2pfiletransfer",
+            storageBucket: "p2pfiletransfer.appspot.com",
+            messagingSenderId: "16635327251"
+        };
+        firebase.initializeApp(config);
+
+        var userLobbyRef = firebase.database().ref('/')
+
+        var userRef;
+        var newPostRef = userLobbyRef.push();
+        var connection;
+
+
+
+
+
+        class UserLobby extends ReduxMixin(Polymer.Element) {
+
+            // TODO:
+            // connect to data base with some user info
+            // on change update list  or  
+            // quit 
+
+            static get is() { return 'user-lobby'; }
+
+            constructor() {
+                super();
+            }
+
+            static get properties() {
+                return {
+                    pageData: {
+                        statePath: 'selectedPage',
+                        observer: "_inUserLobby"
+                    },
+                    userName: {
+                        statePath: 'userName'
+                    },
+                    userID: {
+                        statePath: 'peerID',
+                    },
+                    userList: {
+                        type: Array,
+                        value: [" No one yet :("]
+                    }
+                };
+            }
+            connectToPeer(e) {
+
+                console.log(e.model.item.peerID)
+                connection = peer.connect(e.model.item.peerID);
+                this.dispatch({ type: 'change_Page', payload: 2 })
+                //connection.on('open', function () {
+                //connection.send('Hello! Im initiation the connection');
+
+                //connection.on('data', function (data) {
+                // console.log('I am also receving data', data);
+
+                //});
+                //});
+
+            }
+            _setConnection() {
+                // console.log("connection stablished")
+            }
+
+            _inUserLobby() {
+                if (this.pageData == 1) { // user is in Lobby initializer
+                    // log in user info into firebase
+
+                    newPostRef.set({
+                        username: this.userName,
+                        peerID: this.userID
+                    });
+                    // someone connected to us
+                    peer.on('connection', (conn) => {
+                        //console.log("someone connected to us")
+                        //console.log(conn)
+                        conn.on('open', () => {
+
+                            connection = conn;
+                            // this._setConnection();
+                            this.dispatch({ type: 'change_Page', payload: 2 })
+
+                        });
+                    });
+
+
+
+                    userLobbyRef.on("value", (snapshot) => {
+                        // finds firebase users and put them on userlist
+                        this.userList = [];
+                        snapshot.forEach((childSnapshot) => {
+                            var childKey = childSnapshot.key;
+                            var user = childSnapshot.val();
+                            user = Object.assign({}, childSnapshot.val(), { userKey: childSnapshot.key })
+                            if (user.peerID != this.userID) {
+                                this.push('userList', user);
+                            }
+
+
+                        });
+                        if (this.userList.length == 0) {
+                            this.userList = [" No one yet :("]
+                        }
+
+                    })
+                    //  in case the window closes we want to close the connection to firebase
+                    window.addEventListener("beforeunload", function (e) {
+                        newPostRef.remove();
+                    }, false);
+                }
+            }
+            ready() {
+                super.ready();
+
+            }
+        }
+
+        window.customElements.define(UserLobby.is, UserLobby);
+    </script>
+</dom-module>

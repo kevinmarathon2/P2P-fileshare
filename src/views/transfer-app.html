@@ -1,0 +1,198 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-box/app-box.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../reduxMixin.html">
+
+
+<dom-module id="transfer-app">
+  <template>
+
+    <style>
+       :host {
+        display: block;
+      }
+    </style>
+
+
+    <div>
+      Files they are Sharing:
+      <dom-repeat items="[[sharedFiles]]">
+        <template>
+          <div on-click="requestFile"> <span>File [[index]] :[[item]]</span></div>
+        </template>
+      </dom-repeat>
+      <button on-click="sendPing"> send info</button>
+
+    </div>
+
+
+
+  </template>
+
+
+
+  <script>
+    class TransferApp extends ReduxMixin(Polymer.Element) {
+
+
+      static get is() { return 'transfer-app'; }
+
+      constructor() {
+        super();
+      }
+
+
+
+      static get properties() {
+        return {
+          sharedFiles: {
+            type: Array,
+            value: []
+          }, downloadList: {
+            type: Array,
+            value: []
+          },
+          userName: {
+            type: String,
+            statePath: 'userName'
+          },
+
+          pageData: {
+            statePath: 'selectedPage',
+            observer: "_onThisPage"
+          }
+        };
+      }
+
+      requestFile(e) {
+        var requestedFile = e.model.item;
+        console.log("I have requested " + e.model.item)
+        connection.send({
+          type: "fileRequested",
+          fileName: requestedFile
+        });
+      }
+
+      downloadFile(fileName, buffer) {
+        var fs = require("fs");
+        var writePath = "./Downloads/" + fileName;
+        var blobfile = new Blob(buffer);
+        fs.writeFileSync(writePath, buffer)
+        console.log(buffer)
+      }
+      _onThisPage() {
+        if (this.pageData == 2) {
+          this._setUpConnection();
+        }
+      }
+
+
+      _setUpConnection() {
+        console.log(connection)
+        connection.on('data', (data) => {
+          switch (data.type) {
+
+            case "fileList":
+              console.log("I received file list");
+              this.sharedFiles = [];
+              console.log(data.value);
+              data.value.forEach((element) => {
+                this.push('sharedFiles', element);
+              }, this);
+              break;
+
+
+            case "fileRequested":
+              console.log("someone requested a file from us" + data)
+              var fs = require("fs");
+              var path = "./SharedFiles/" + data.fileName;
+              console.log(path)
+              var buffer = fs.readFileSync(path);
+              console.log(buffer)
+              console.log(JSON.stringify(buffer).length)
+              var fileInfo = {
+                type: "receiveFile",
+                fileName: data.fileName,
+                datainfo: JSON.stringify(buffer)
+              }
+              console.log(fileInfo)
+              connection.send(fileInfo);
+              break;
+
+            case "receiveFile":
+              console.log("Receiving something")
+              console.log(data)
+              // this.downloadFile(data.fileName, data.buffer)
+              break;
+
+
+            default: console.log("other data"); console.log(data)
+          }
+        });
+
+        setTimeout(this.sendFileList, 2000)
+
+      }
+      sendPing() {
+        connection.send({
+          type: "hello",
+          value: 'ping'
+        });
+      }
+
+      sendFileList() {
+        var fs = require("fs");
+
+        // Read list of files in shared folder and push them into SharedFiles property
+        var filelist = fs.readdirSync("./SharedFiles/")
+        connection.send({
+          type: "fileList",
+          value: filelist
+        });
+
+      }
+
+
+
+
+
+      ready() {
+        super.ready();
+
+        var fs = require("fs");
+
+        // Read list of files in shared folder and push them into SharedFiles property
+        // var filelist = fs.readdirSync("./SharedFiles/")
+        // filelist.forEach(function (element) {
+        //   this.push('sharedFiles', element);
+        // }, this);
+
+        // // Read list of downloadable files
+        // var filelist = fs.readdirSync("./Downloads/")
+        // filelist.forEach(function (element) {
+        //   this.push('downloadList', element);
+        // }, this);
+
+      }
+    }
+
+    window.customElements.define(TransferApp.is, TransferApp);
+  </script>
+</dom-module>
+
+
+
+<script>
+  // Other stuff that we might do something with later
+  // How to get file size
+          //var filesize = fs.statSync("myfile.txt")
+          // const fileSizeInBytes = stats.size
+          //Convert the file size to megabytes (optional)
+
+  // click button
+        // Show how iron pages work as well as property changes
+        //this.pageSelection = 2;
+        //this.push('sharedFiles', "hello");
+        //console.log(this.sharedFiles)
+
+</script>

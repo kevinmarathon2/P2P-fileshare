@@ -1,0 +1,112 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-box/app-box.html">
+<link rel="import" href="./components/anotherElement.html">
+<script src="./components/js/peer.js"></script>
+
+
+<dom-module id="transfer-app">
+
+
+  <template>
+
+    <style>
+       :host {
+        display: block;
+      }
+    </style>
+
+
+    <div>
+      files for us to share: <br>{{sharedFiles}}
+    </div>
+    <br>
+    <div> Files we can receive<br> [[downloadList]]</div>
+    <div><button on-click="_clickedButton">click me</button></div>
+    <h2>Hello nothing here yyet</h2>
+    <another-el chil-dren="as"> </another-el>
+    <br>
+    <div>Connected as : {{peerID}}</div>
+
+
+  </template>
+
+
+
+  <script>
+    var peer = new Peer({ key: 'vy9ar3imqp8pvi' });
+    class TransferApp extends Polymer.Element {
+
+
+      static get is() { return 'transfer-app'; }
+
+
+      constructor() {
+        super();
+        console.log(peer)
+        this.peerShared = peer;
+        this.peerID = peer.id;
+      }
+
+
+
+      static get properties() {
+        return {
+          sharedFiles: {
+            type: Array,
+            value: ["Nothing yet", "and another"]
+
+          },
+          downloadList: {
+            type: Array,
+            value: []
+          },
+          peerID: {
+            type: String,
+            value: 'loading'
+          }
+          ,
+          peerShared:
+          {
+            type: Object, value: {
+
+            }
+          }
+        };
+      }
+
+
+
+
+
+      _clickedButton() {
+        this.push('sharedFiles', "hello");
+        console.log(this.sharedFiles)
+      }
+
+
+      ready() {
+        super.ready();
+        var fs = require("fs");
+
+        var filelist = fs.readdirSync("./SharedFiles/")
+        filelist.forEach(function (element) {
+          //var filesize = fs.statSync("myfile.txt")
+          // const fileSizeInBytes = stats.size
+          //Convert the file size to megabytes (optional)
+          this.push('sharedFiles', element);
+        }, this);
+
+        var filelist = fs.readdirSync("./Downloads/")
+        filelist.forEach(function (element) {
+          this.push('downloadList', element);
+
+        }, this);
+        var t = new Number(peer.id);
+        this.peerID = t.toString();
+
+      }
+    }
+
+    window.customElements.define(TransferApp.is, TransferApp);
+  </script>
+</dom-module>

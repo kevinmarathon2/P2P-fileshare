@@ -1,0 +1,6 @@
+{
+  "name": "transfer",
+  "short_name": "transfer",
+  "start_url": "/",
+  "display": "standalone"
+}

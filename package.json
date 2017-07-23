@@ -1,0 +1,20 @@
+{
+  "name": "P2P-fileshare",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "polymer build && electron ."
+  },
+  "keywords": ["P2P-fileshare", "transfer"],
+  "author": "Kevin Rivera",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "~1.6.2"
+  },
+  "dependencies": {
+    "material-components-web": "^0.14.0",
+    "redux": "^3.7.1",
+    "simple-peer": "^8.1.1"
+  }
+}

@@ -1,0 +1,62 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-box/app-box.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="./views/loggin.html">
+<link rel="import" href="./views/userLobby.html">
+<link rel="import" href="./views/transfer-app.html">
+<link rel="import" href="./reduxMixin.html">
+
+<script src="./transfer-app/components/js/peer.js"></script>
+
+<dom-module id="main-app">
+
+
+    <template>
+
+        <style>
+
+        </style>
+        <iron-pages selected="[[selectedPage]]">
+            <loggin-page></loggin-page>
+            <user-lobby></user-lobby>
+            <transfer-app></transfer-app>
+        </iron-pages>
+
+
+
+    </template>
+
+
+
+    <script>
+        var peer = new Peer({ key: 'vy9ar3imqp8pvi' });
+        peer.on('open', function (id) {
+            console.log('My peer ID is: ' + id);
+        });
+        class MainApp extends ReduxMixin(Polymer.Element) {
+
+
+            static get is() { return 'main-app'; }
+
+            constructor() {
+                super();
+            }
+
+            static get properties() {
+                return {
+                    selectedPage: {
+                        type: Number,
+                        statePath: 'selectedPage'
+                    }
+                };
+            }
+
+            ready() {
+                super.ready();
+            }
+
+        }
+
+        window.customElements.define(MainApp.is, MainApp);
+    </script>
+</dom-module>
