@@ -29,10 +29,13 @@
 
 
     <script>
+        var Rx = require('rxjs/Rx');
         var peer = new Peer({ key: 'vy9ar3imqp8pvi' });
-        peer.on('open', function (id) {
-            console.log('My peer ID is: ' + id);
-        });
+
+
+        var openObservable = Rx.Observable.fromEvent(peer, 'open').take(1);
+        openObservable.subscribe(x => console.log(x + "From observable"));
+
         class MainApp extends ReduxMixin(Polymer.Element) {
 
 

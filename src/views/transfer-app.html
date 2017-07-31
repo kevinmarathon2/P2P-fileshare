@@ -108,12 +108,17 @@
               var path = "./SharedFiles/" + data.fileName;
               console.log(path)
               var buffer = fs.readFileSync(path);
-              console.log(buffer)
-              console.log(JSON.stringify(buffer).length)
+              console.log(typeof buffer)
+              console.log(buffer.length)
+
+
+
+              console.log(buffer[0])
+
               var fileInfo = {
                 type: "receiveFile",
                 fileName: data.fileName,
-                datainfo: JSON.stringify(buffer)
+                datainfo: buffer
               }
               console.log(fileInfo)
               connection.send(fileInfo);
@@ -122,7 +127,7 @@
             case "receiveFile":
               console.log("Receiving something")
               console.log(data)
-              // this.downloadFile(data.fileName, data.buffer)
+              this.downloadFile(data.fileName, data.buffer)
               break;
 
 
