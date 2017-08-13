@@ -35,6 +35,7 @@
     class TransferApp extends ReduxMixin(Polymer.Element) {
 
 
+
       static get is() { return 'transfer-app'; }
 
       constructor() {
@@ -76,7 +77,8 @@
       downloadFile(fileName, buffer) {
         var fs = require("fs");
         var writePath = "./Downloads/" + fileName;
-        var blobfile = new Blob(buffer);
+        //var newFile = new File(buffer)
+        //var blobfile = new Blob(buffer);
         fs.writeFileSync(writePath, buffer)
         console.log(buffer)
       }
@@ -89,6 +91,37 @@
 
       _setUpConnection() {
         console.log(connection)
+
+        let Rx = require('rxjs/Rx');
+
+        var bufferIsFinished = Rx.Observable.fromEvent(connection, 'data').filter(data => data.type == 'finished');
+        var Receivingbuffer = Rx.Observable.fromEvent(connection, 'data').filter(data => data.type == 'receiveFile').subscribe(
+          (data) => {
+            console.log(data)
+            var fs = require("fs");
+            var ReceivedFileName = data.fileName;
+            var ReceivedFileData = data.datainfo;
+            var buf = new Buffer(ReceivedFileData.byteLength);
+            var view = new Uint8Array(ReceivedFileData);
+            for (var i = 0; i < buf.length; ++i) {
+              buf[i] = view[i];
+            }
+            fs.writeFile("./Downloads/" + ReceivedFileName, buf, (err) => {
+              if (err) throw err;
+              console.log('It\'s saved!');
+            });
+            // var receivedFile = data[0]
+            // var fs = require("fs");
+            // var writePath = "./Downloads/" + receivedFile.fileName;
+            // var filestream = fs.createWriteStream(writePath)
+            // console.log(typeof receivedFile.datainfo)
+            // console.log(receivedFile.datainfo)
+            // console.log(Object.keys(receivedFile.datainfo))
+            // filestream.write(receivedFile.datainfo);
+          }
+        )
+
+
         connection.on('data', (data) => {
           switch (data.type) {
 
@@ -103,31 +136,32 @@
 
 
             case "fileRequested":
-              console.log("someone requested a file from us" + data)
+              // console.log("someone requested a file from us" + data)
               var fs = require("fs");
               var path = "./SharedFiles/" + data.fileName;
-              console.log(path)
+              // console.log(path)
               var buffer = fs.readFileSync(path);
-              console.log(typeof buffer)
-              console.log(buffer.length)
+              //console.log(typeof buffer)
+              // console.log(buffer.length)
 
 
 
               console.log(buffer[0])
 
-              var fileInfo = {
+              let fileInfo = {
                 type: "receiveFile",
                 fileName: data.fileName,
                 datainfo: buffer
               }
               console.log(fileInfo)
               connection.send(fileInfo);
+
               break;
 
             case "receiveFile":
-              console.log("Receiving something")
-              console.log(data)
-              this.downloadFile(data.fileName, data.buffer)
+              // console.log("Receiving something")
+              // console.log(data)
+              // this.downloadFile(data.fileName, data.datainfo)
               break;
 
 
